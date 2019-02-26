@@ -22,51 +22,72 @@ We will want to use the tidyr and dplyr packages
 library(tidyr)
 library(dplyr
 
+## extract and assign training set
+
+trainx <- read.table("UCI HAR Dataset/train/x_train.txt")
+trainy <- read.table("UCI HAR Dataset/train/y_train.txt")
+train_subjects <- read.table("UCI HAR Dataset/train/subject_train.txt")
+
+## extract and assign test sets
+testx <- read.table("UCI HAR Dataset/test/X_test.txt")
+testy <- read.table("UCI HAR Dataset/test/y_test.txt")
+test_subjects <- read.table("UCI HAR Dataset/test/subject_test.txt")
 
 
-End with an example of getting some data out of the system or using it for a little demo
+# setting features
+features <- read.table("UCI HAR Dataset/features.txt", stringsAsFactors = FALSE)
 
-## Running the tests
+# read in activity labels
+activity_labels <- read.table("UCI HAR Dataset/activity_labels.txt")
 
-Explain how to run the automated tests for this system
+# assignning column names for training sets
+colnames(trainx) <- features[,2] 
+colnames(trainy) <-"activityId"
+colnames(train_subjects) <- "subjectId"
 
-### Break down into end to end tests
+# column names for testing sets
 
-Explain what these tests test and why
+colnames(testx) <- features[,2] 
+colnames(testy) <- "activityId"
+colnames(test_subjects) <- "subjectId"
 
-```
-Give an example
-```
+##
+colnames(activity_labels) <- c('activityId','activityType')
 
-### And coding style tests
+## Merging all data in one
+merge_train <- cbind(trainy, train_subjects, trainx)
+merge_test <- cbind(testy, test_subjects, testx)
+setAllInOne <- rbind(merge_train, merge_test)
 
-Explain what these tests test and why
+## reading column names
+colNames <- colnames(setAllInOne)
 
-```
-Give an example
-```
+## getting mean and std
+mean_and_std <- (grepl("activityId" , colNames) | 
+                         grepl("subjectId" , colNames) | 
+                         grepl("mean.." , colNames) | 
+                         grepl("std.." , colNames) 
+)
 
-## Deployment
 
-Add additional notes about how to deploy this on a live system
+## subset for allinone
+setForMeanAndStd <- setAllInOne[ , mean_and_std == TRUE]
 
-## Built With
+# descriptive activity names
+setWithActivityNames <- merge(setForMeanAndStd, activity_labels,
+                              by='activityId',
+                              all.x=TRUE)
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+## set clean data set
+clean_data <- aggregate(. ~subjectId + activityId, setWithActivityNames, mean)
+clean_data <- clean_data[order(clean_data$subjectId, clean_data$activityId),]
 
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+##
+write.table(clean_data, "clean_data.txt", row.name=FALSE)
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Tony Maddalone** - *Initial work* - (https://github.com/baddfish)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
@@ -74,9 +95,4 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
 
