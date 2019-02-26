@@ -1,6 +1,6 @@
-# Project Title
+# Getting and Cleaning Data Course Project
 
-One Paragraph of project description goes here
+For this project we are given files that need to be merged, cleaned, and correctly labeled to be able to be more readable
 
 ## Getting Started
 
